@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct UberCloneApp: App {
+    @StateObject var vm = LocationSearchViewModel()
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            HomeView()
+                .environmentObject(vm)
         }
     }
 }
