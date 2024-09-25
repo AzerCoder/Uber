@@ -22,6 +22,8 @@ class LocationSearchViewModel:NSObject,ObservableObject{
         }
     }
     
+    var userLocation: CLLocationCoordinate2D?
+    
     //MARK: - Lifecycle
     
     override init() {
@@ -32,15 +34,17 @@ class LocationSearchViewModel:NSObject,ObservableObject{
     
     //MARK: - Helpers
     
-    func selectedLocation(_ localSearch:MKLocalSearchCompletion){
+    func selectLocation(_ localSearch:MKLocalSearchCompletion){
         locationSearch(forLocalSearchCompletion: localSearch) { response, error in
             
             if let error = error{
                 print("DEBUG: Location search failed with error \(error.localizedDescription)")
+                return
             }
             
             guard let item = response?.mapItems.first else{return}
             let coordinate = item.placemark.coordinate
+            print("DEBUG: Location coordinate \(coordinate)")
             self.selectedLocationCoordinate = coordinate
         }
     }
@@ -51,6 +55,17 @@ class LocationSearchViewModel:NSObject,ObservableObject{
         let search = MKLocalSearch(request: searchRequest)
         
         search.start(completionHandler: completion)
+    }
+    
+    func computeRidePrice(forType type:RideType) -> Double{
+        guard let destCoordinate = selectedLocationCoordinate else{ return 0.0}
+        guard let userCoordinate = self.userLocation else{ return 0.0}
+        
+        let userLocation = CLLocation(latitude: userCoordinate.latitude, longitude: userCoordinate.longitude)
+        let destination = CLLocation(latitude: destCoordinate.latitude, longitude: destCoordinate.longitude)
+        
+        let tripDistanceInMEters = userLocation.distance(from: destination)
+        return type.computePrice(for: tripDistanceInMEters)
     }
 }
 

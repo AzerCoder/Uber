@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct MapViewActionButton: View {
-    @Binding var showLocationSearchView:Bool
+    @Binding var mapState:MapViewState
+    @EnvironmentObject var vm : LocationSearchViewModel
     var body: some View {
         Button {
             withAnimation(.spring) {
-                self.showLocationSearchView.toggle()
+                actionForState(mapState)
             }
         } label: {
-            Image(systemName: showLocationSearchView ? "arrow.left": "line.3.horizontal")
+            Image(systemName: imageNameForState(mapState))
                 .font(.title2)
                 .foregroundColor(.black)
                 .frame(width: 50,height: 50)
@@ -26,8 +27,30 @@ struct MapViewActionButton: View {
         .frame(maxWidth: .infinity,alignment: .leading)
 
     }
+    
+    func actionForState(_ state: MapViewState){
+        switch state {
+        case .noInput:
+            print("No input")
+        case .searchingForLocation:
+            mapState = .noInput
+        case .locationSelected:
+            mapState = .noInput
+            vm.selectedLocationCoordinate = nil
+        }
+       
+    }
+    
+    func imageNameForState(_ state: MapViewState ) -> String {
+        switch state {
+        case .noInput:
+            return "line.3.horizontal"
+        case .searchingForLocation , .locationSelected:
+            return "arrow.left"
+        }
+    }
 }
 
 #Preview {
-    MapViewActionButton(showLocationSearchView: .constant(true))
+    MapViewActionButton(mapState: .constant(.noInput))
 }
